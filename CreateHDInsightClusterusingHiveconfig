@@ -1,0 +1,38 @@
+param 
+( 
+ ############################################################################# 
+ ### Please edit the values of the parameters below for your configuration ### 
+ ############################################################################# 
+ 
+ [string]$PrimarySubscriptionName="Subscription Name", # Replace <Your Subscription Name> with your Azure subscription name 
+ [string]$HDInsightClusterLocation="Cluster Location", # This is the data center where you are going to provision this HDInsight cluster 
+ [string]$HDInsightClusterName="Cluster Name", # This is the name that you want for the HDInsight cluster 
+ [int]$NumNodesInCluster = 4, # This is the number of data nodes that you want for this cluster 
+ 
+ # The storage accounts and containers need to be created on the same data center as your HDInsight cluster prior to the execution of this PS script 
+ [string]$PrimaryStorageAccount="myhivestorage", # This is the name of your primary storage account 
+ [string]$PrimaryStorageContainer="myhivestoragecontainer" # This is the name of the primary storage container 
+  
+ ############################################################################ 
+ ###                             End Edits                                ### 
+ ############################################################################ 
+ ) 
+ $PrimarySubscriptionID = (Get-AzureSubscription $PrimarySubscriptionName).SubscriptionId 
+ Select-AzureSubscription -SubscriptionName $PrimarySubscriptionName 
+  
+New-AzureStorageAccount -StorageAccountName $PrimaryStorageAccount -Location "North Europe"
+
+ # This will be the credential used for the admin account of the HDInsight Cluster 
+ $creds = Get-Credential -Message "Please enter the admin account credentials for your HDInsight Cluster" 
+ 
+ ######################################################### 
+ ### This section adds configuration to hive           ### 
+ ######################################################### 
+ 
+ $configvalues = new-object 'Microsoft.WindowsAzure.Management.HDInsight.Cmdlet.DataObjects.AzureHDInsightHiveConfiguration'
+ $configvalues.Configuration = @{ “hive.exim.uri.scheme.whitelist”=”wasb,hdfs,pfile” } 
+  
+    New-AzureHDInsightClusterConfig -ClusterSizeInNodes $NumNodesInCluster `
+    | Set-AzureHDInsightDefaultStorage -StorageAccountName "$PrimaryStorageAccount.blob.core.windows.net" -StorageAccountKey (Get-AzureStorageKey $PrimaryStorageAccount).Primary -StorageContainerName $PrimaryStorageContainer `
+    | Add-AzureHDInsightConfigValues -Hive $configvalues `
+    | New-AzureHDInsightCluster -Credential $creds -Name $HDInsightClusterName -Location $HDInsightClusterLocation -Debug
