@@ -1,0 +1,57 @@
+# Cluster Name
+
+$clusterName="CLUSTER NAME"
+
+# Subscription name
+
+$subscriptionName="SUBSCRIPTION NAME"
+
+#   Assuming mahout-core-0.8-job.jar copied to Mahout folder. 
+
+$mahoutJob = New-AzureHDInsightMapReduceJobDefinition -JarFile "/user/hdpinternaluser/Mahout/mahout-core-0.8-job.jar" -ClassName "org.apache.mahout.cf.taste.hadoop.item.RecommenderJob"
+
+# Adding the similarityclassname argument
+
+$mahoutJob.Arguments.Add("-s")
+
+# Adding the name of similarityclassname
+
+$mahoutJob.Arguments.Add("SIMILARITY_COOCCURRENCE")
+
+# Adding the input file argument
+
+$mahoutJob.Arguments.Add("-i")
+
+# Adding location of the file. The file is stored on Windows Azure Storage Blob. 
+
+$mahoutJob.Arguments.Add("/user/hdpinternaluser/Mahout/customerpurchase.txt")
+
+# Adding usersFile as an argument.
+
+$mahoutJob.Arguments.Add("--usersFile")
+
+# Adding userFile location. 
+
+$mahoutJob.Arguments.Add("/user/hdpinternaluser/Mahout/customers.txt")
+
+# Adding output as an argument. 
+
+$mahoutJob.Arguments.Add("--output")
+
+# Adding output location. This will be the location where result will be generated. 
+
+$mahoutJob.Arguments.Add("/user/hdpinternaluser/Mahout/output")
+
+# Starting job 
+
+$MahoutJobProcessing = Start-AzureHDInsightJob -Cluster $clusterName -Subscription 
+
+$subscriptionName -JobDefinition $mahoutJob
+
+
+# Waiting Job for completion 
+Wait-AzureHDInsightJob -Subscription $subscriptionName -Job $MahoutJobProcessing -WaitTimeoutInSeconds 3600
+
+# Getting error if any
+
+Get-AzureHDInsightJobOutput -Cluster $clusterName -Subscription $subscriptionName -JobId $MahoutJobProcessing.JobId -StandardError 
