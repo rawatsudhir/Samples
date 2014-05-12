@@ -1,0 +1,23 @@
+$clusterName = "CLUSTER NAME" 
+$statusFolder = "/user/pigsampleudf/status"
+# Create the Pig job definition
+$0 = '$0';
+$QueryString =  "REGISTER 'wasb://CONTAINER_NAME@STORAGE_NAME.blob.core.windows.net/user/pigsampleudf/commission.jar';" +
+  "A = LOAD 'wasb://CONTAINER_NAME@STORAGE_NAME.blob.core.windows.net/user/pigsampleudf/salesdata.txt' USING PigStorage(',') as (name:chararray, syear:int, sales:long, target:long);" +
+  "B = FOREACH A GENERATE syear, name,sales, salescommission.calculatecommission(sales,target);" +
+  "DUMP B;" 
+
+$pigJobDefinition = New-AzureHDInsightPigJobDefinition -Query $QueryString -StatusFolder $statusFolder 
+# Submit the Pig job
+Write-Host "Submit the Pig job ..." -ForegroundColor Green
+$pigJob = Start-AzureHDInsightJob -Cluster $clusterName -JobDefinition $pigJobDefinition  
+# Wait for the Pig job to complete
+Write-Host "Wait for the Pig job to complete ..." -ForegroundColor Green
+Wait-AzureHDInsightJob -Job $pigJob -WaitTimeoutInSeconds 3600
+# Print the standard error and the standard output of the Pig job.
+#Write-Host "Display the standard error log ..." -ForegroundColor Green
+#Get-AzureHDInsightJobOutput -Cluster $clusterName -JobId $pigJob.JobId -StandardError
+
+Write-Host "Display the standard output ..." -ForegroundColor Green
+Get-AzureHDInsightJobOutput -Cluster $clusterName -JobId $pigJob.JobId -StandardOutput
+
