@@ -13,7 +13,7 @@ import java.io.IOException;
 import org.apache.pig.EvalFunc; /* importing org.apache.pig.EvalFunc for extending Evalfunc class */
 import org.apache.pig.data.Tuple; /* importing org.apache.pig.data.Tuple since we'll be refer it in the class */
 public class calculatecommission extends EvalFunc<String> { /* Extend EvalFunc class which is used to implement function on data set */
-	public String exec(Tuple input) throws IOException { /* Expecting Tuple as input for example (100,200). Raise exception if any error with IO */
+	public String exec(Tuple input) throws IOException { /* Expecting Tuple as input for example (100,200). Raise exception if any error during IO */
 		Long sales= (Long) input.get(0); /* first index value of Tuple contains sales value*/
 		Long target= (Long) input.get(1); /* second index value of Tuple contains target value */
 		Double commission=0.0; /* variable will contain commission value */
