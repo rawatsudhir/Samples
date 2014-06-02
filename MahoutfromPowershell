@@ -10,6 +10,8 @@ $containerName = "<containerName>"
 
 $storageAccountName = "<StorageAccountName>"
 
+Select-AzureSubscription -SubscriptionName $subscriptionName
+
  #   Assuming mahout-core-0.8-job.jar copied to Mahout folder.
 
  $mahoutJob = New-AzureHDInsightMapReduceJobDefinition -JarFile "wasb://$containerName@$storageAccountName.blob.core.windows.net/mahout/mahout-core-0.8-job.jar" -ClassName "org.apache.mahout.cf.taste.hadoop.item.RecommenderJob"
@@ -48,12 +50,12 @@ $storageAccountName = "<StorageAccountName>"
 
  # Starting job
 
- $MahoutJobProcessing = Start-AzureHDInsightJob -Cluster $clusterName -Subscription $subscriptionName -JobDefinition $mahoutJob
+ $MahoutJobProcessing = Start-AzureHDInsightJob -Cluster $clusterName -JobDefinition $mahoutJob
 
  # Waiting Job for completion
 
-Wait-AzureHDInsightJob -Subscription $subscriptionName -Job $MahoutJobProcessing -WaitTimeoutInSeconds 3600
+Wait-AzureHDInsightJob -Job $MahoutJobProcessing -WaitTimeoutInSeconds 3600
 
  # Getting error if any
 
- Get-AzureHDInsightJobOutput -Cluster $clusterName -Subscription $subscriptionName -JobId $MahoutJobProcessing.JobId -StandardError
+ Get-AzureHDInsightJobOutput -Cluster $clusterName -JobId $MahoutJobProcessing.JobId -StandardError
